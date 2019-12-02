@@ -14,12 +14,12 @@ void FAction::SetActionComponent(UActionComponent* InActionComponent)
 	ActionComponent = InActionComponent;
 }
 
-void FAction::NotifyActionFinish(EActionResult Result)
+void FAction::NotifyActionFinish(EActionResult Result, const FString& Reason /*= EActionFinishReason::UnKnown*/)
 {
 	if (ParentAction.IsValid())
-		ParentAction.Pin().FinishChildAction(this, Result);
-	else if (ActionComponent->IsValid())
-		ActionComponent->FinishAction(this, Result);
+		ParentAction.Pin()->FinishChildAction(this, Result, Reason);
+	else if (ActionComponent.IsValid())
+		ActionComponent->FinishAction(this, Result, Reason);
 }
 
 void FAction::NotifyTypeChanged()
@@ -29,15 +29,15 @@ void FAction::NotifyTypeChanged()
 	if (ActionType == Type)
 		return;
 	if (ParentAction.IsValid())
-		ParentAction.Pin().NotifyTypeChanged();
+		ParentAction.Pin()->NotifyTypeChanged();
 	else if (ActionComponent.IsValid())
 		ActionComponent->ActionTypeChanged(this, ActionType);
 
 }
 
-bool FAction::DoFinishAction(EActionResult InResult, EActionType StopType /*= EActionType::Default*/)
+bool FAction::DoFinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
-	if (FinishAction(InResult, StopType))
+	if (FinishAction(InResult, EActionFinishReason::UnKnown, StopType))
 	{
 		if (InResult != EActionResult::Clean)
 		{
@@ -62,7 +62,7 @@ EActionResult FAction::DoExecuteAction()
 		Result = ExecuteAction();
 		if (Result != EActionResult::Wait)
 		{
-			PostFinish.ExecuteIfBound(this, Result);
+			PostFinish.ExecuteIfBound(this, Result, EActionFinishReason::UnKnown);
 		}
 	}
 	return Result;

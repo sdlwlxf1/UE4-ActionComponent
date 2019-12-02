@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "IDelegateInstance.h"
+#include "ActionEnums.h"
 #include "ActionComponent.generated.h"
 
 class ACharacter;
@@ -33,10 +34,10 @@ public:
 	virtual bool GetComponentClassCanReplicate() const override;
 
 	void ExecuteAction(TSharedPtr<FAction> NewAction);
-	void StopAllAction();
-	void StopMoveAction();
-	void StopAction(FAction *InAction);
-	void StopActionsByType(EActionType InType, bool bForce = true);
+	void StopAllAction(const FString& Reason = EActionFinishReason::CustomStop);
+	void StopMoveAction(const FString& Reason = EActionFinishReason::CustomStop);
+	void StopAction(FAction *InAction, const FString& Reason = EActionFinishReason::CustomStop);
+	void StopActionsByType(EActionType InType, bool bForce = true, const FString& Reason = EActionFinishReason::CustomStop);
 
 	const TMap<EActionType, TArray<TSharedPtr<FAction>>> &GetAllActions() const { return Actions; }
 
@@ -44,8 +45,8 @@ public:
 
 protected:
 
-	void FinishActionsByType(EActionType InType, EActionResult Result = EActionResult::Abort, EActionType StopType = EActionType::Default);
-	void FinishAction(FAction *InAction, EActionResult Result = EActionResult:Abort);
+	void FinishActionsByType(EActionType InType, EActionResult Result = EActionResult::Abort, const FString& Reason = EActionFinishReason::UnKnown, EActionType StopType = EActionType::Default);
+	void FinishAction(FAction *InAction, EActionResult Result = EActionResult::Abort, const FString& Reason = EActionFinishReason::UnKnown);
 	void ActionTypeChanged(FAction *InAction, EActionType OldType);
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;

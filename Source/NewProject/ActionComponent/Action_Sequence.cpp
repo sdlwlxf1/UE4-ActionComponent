@@ -71,7 +71,7 @@ EActionResult FAction_Sequence::ExecuteAction()
 	return Sequence.Num() == 0 ? EActionResult::Success : EActionResult::Wait;
 }
 
-bool FAction_Sequence::FinishAction(EActionResult InResult, EActionType StopType /*== EActionType::Default*/)
+bool FAction_Sequence::FinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
 	if (Sequence.Num() == 0 || !Sequence[0].IsValid())
 	{
@@ -79,7 +79,7 @@ bool FAction_Sequence::FinishAction(EActionResult InResult, EActionType StopType
 	}
 	TSharedPtr<FAction> CurAction = Sequence[0];
 	Sequence[0].Reset();
-	if (CurAction->DoFinishAction(InResult, StopType) == false)
+	if (CurAction->DoFinishAction(InResult, Reason, StopType) == false)
 	{
 		Sequence[0] = CurAction;
 		NotifyTypeChanged();
@@ -114,14 +114,14 @@ void FAction_Sequence::UpdateType()
 	}
 }
 
-bool FAction_Sequence::FinishChildAction(FAction *InAction, EActionResult InResult, EActionType StopType /*= EActionType::Default*/)
+bool FAction_Sequence::FinishChildAction(FAction* InAction, EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
 	if (InAction)
 	{
 		ensure(InAction == Sequence[0].Get());
 		TSharedPtr<FAction> Action = Sequence[0];
 		Sequence[0].Reset();
-		if (Action->DoFinishAction(InResult, StopType))
+		if (Action->DoFinishAction(InResult, Reason, StopType))
 		{
 			if (InResult == EActionResult::Success)
 			{
@@ -146,14 +146,14 @@ bool FAction_Sequence::FinishChildAction(FAction *InAction, EActionResult InResu
 			if (InResult == EActionResult::Fail || InResult == EActionResult::Abort || InResult == EActionResult::Clean)
 			{
 				Sequence.Empty();
-				NotifyActionFinish(InResult);
+				NotifyActionFinish(InResult, Reason);
 			}
 			else
 			{
 				Sequence.RemoveAll([](const TSharedPtr<FAction>& Action) { return !Action.IsValid(); });
 				if (Sequence.Num() == 0)
 				{
-					NotifyActionFinish(InResult);
+					NotifyActionFinish(InResult, Reason);
 				}
 				else
 				{

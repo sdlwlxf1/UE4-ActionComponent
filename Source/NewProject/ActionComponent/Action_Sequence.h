@@ -16,12 +16,12 @@ public:
 
 protected:
 	virtual EActionResult ExecuteAction() override;
-	virtual bool FinishAction(EActionResult InResult, EActionType StopType == EActionType::Default) override;
+	virtual bool FinishAction(EActionResult InResult, const FString& Reason = EActionFinishReason::UnKnown, EActionType StopType = EActionType::Default) override;
 	virtual EActionResult TickAction(float DeltaTime) override;
 
 	virtual void UpdateType() override;
 
-	virtual bool FinishChildAction(FAction *InAction, EActionResult InResult, EActionType StopType = EActionType::Default) override;
+	virtual bool FinishChildAction(FAction* InAction, EActionResult InResult, const FString& Reason = EActionFinishReason::UnKnown, EActionType StopType = EActionType::Default) override;
 
 	TArray<TSharedPtr<FAction>> Sequence;
 };

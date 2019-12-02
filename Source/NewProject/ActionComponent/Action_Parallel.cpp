@@ -28,7 +28,7 @@ TArray<const FAction*> FAction_Parallel::GetActiveActions() const
 
 FName FAction_Parallel::GetName() const
 {
-
+	return TEXT("Action_Parallel");
 }
 
 FString FAction_Parallel::GetDescription() const
@@ -63,13 +63,13 @@ EActionResult FAction_Parallel::ExecuteAction()
 	return MajorResult;
 }
 
-bool FAction_Parallel::FinishAction(EActionResult InResult, EActionType StopType /*= EActionType::Default*/)
+bool FAction_Parallel::FinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
 	if (Major.IsValid())
 	{
 		TSharedPtr<FAction> Action = Major;
 		Major.Reset();
-		if (Action->DoFinishAction(InResult, StopType) == false)
+		if (Action->DoFinishAction(InResult, Reason, StopType) == false)
 		{
 			Major = Action;
 			NotifyTypeChanged();
@@ -80,7 +80,7 @@ bool FAction_Parallel::FinishAction(EActionResult InResult, EActionType StopType
 	{
 		TSharedPtr<FAction> Action = Minor;
 		Minor.Reset();
-		Action->DoFinishAction(EActionResult::Abort, StopType);
+		Action->DoFinishAction(EActionResult::Abort, Reason, StopType);
 	}
 	return true;
 }
@@ -109,7 +109,7 @@ void FAction_Parallel::UpdateType()
 
 }
 
-bool FAction_Parallel::FinishChildAction(FAction* InAction, EActionResult InResult, EActionType StopType /*= EActionType::Default*/)
+bool FAction_Parallel::FinishChildAction(FAction* InAction, EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
 
 }

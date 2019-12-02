@@ -4,6 +4,9 @@
 #include "VisualLogger/VisualLogger.h"
 #include "VisualLogger/VisualLoggerTypes.h"
 #include "Action.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 
 DEFINE_LOG_CATEGORY(LogActionComponent)
 
@@ -15,17 +18,17 @@ UActorComponent::UActorComponent(const FObjectInitializer& ObjectInitializer) : 
 	bWantsInitializeComponent = true;
 }
 
-void UActionComponent::StopMoveAction()
+void UActionComponent::StopMoveAction(const FString& Reason /*= EActionFinishReason::CustomStop*/)
 {
-	StopActionsByType(EActionType::Move);
+	StopActionsByType(EActionType::Move, true, Reason);
 }
 
-void UActionComponent::StopAction(FAction *InAction)
+void UActionComponent::StopAction(FAction *InAction, const FString& Reason /*= EActionFinishReason::CustomStop*/)
 {
-	FinishAction(InAction, EActionResult::Abort);
+	FinishAction(InAction, EActionResult::Abort, Reason);
 }
 
-void UActionComponent::StopActionsByType(EActionType InType, bool bForce /*= true*/)
+void UActionComponent::StopActionsByType(EActionType InType, bool bForce /*= true*/, const FString& Reason /*= EActionFinishReason::CustomStop*/)
 {
 	TMap<EActionType, TArray<TSharedPtr<FAction>>> TempActions = Actions;
 	for (auto Pair : TempActions)
@@ -45,9 +48,13 @@ void UActionComponent::StopActionsByType(EActionType InType, bool bForce /*= tru
 			{
 				if (Action.IsValid())
 				{
-					if (Action->DoFinishAction(EActionResult::Abort, InType) == false)
+					if (Action->DoFinishAction(EActionResult::Abort, Reason, InType) == false)
 					{
-						if (!Actions.Contains(Action->GetType())
+						if (!Actions.Contains(Action->GetType()))
+						{
+							Actions.Add(Action->GetType(), TArray<TSharedPtr<FAction>>());
+						}
+						Actions[Action->GetType()].Add(Action);
 					}
 				}
 			}
@@ -105,9 +112,9 @@ bool UActionComponent::GetComponentClassCanReplicate() const
 	return false;
 }
 
-void UActionComponent::FinishActionsByType(EActionType InType, EActionResult Result /*= EActionResult::Abort*/, EActionType StopType /*= EActionType::Default*/)
+void UActionComponent::FinishActionsByType(EActionType InType, EActionResult Result /*= EActionResult::Abort*/, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
-	UpdatePawn()
+	UpdatePawn();
 
 	if (Actions.Contains(InType))
 	{
@@ -117,7 +124,7 @@ void UActionComponent::FinishActionsByType(EActionType InType, EActionResult Res
 		{
 			if (Action.IsValid())
 			{
-				if (Action->DoFinishAction(Result, StopType) == false)
+				if (Action->DoFinishAction(Result, Reason, StopType) == false)
 				{
 					if (!Actions.Contains(Action->GetType()))
 					{
@@ -130,7 +137,7 @@ void UActionComponent::FinishActionsByType(EActionType InType, EActionResult Res
 	}
 }
 
-void UActionComponent::FinishAction(FAction *InAction, EActionResult Result /*= EActionResult:Abort*/)
+void UActionComponent::FinishAction(FAction *InAction, EActionResult Result /*= EActionResult::Abort*/, const FString& Reason /*= EActionFinishReason::UnKnown*/)
 {
 	if (!InAction)
 		return;
@@ -228,7 +235,7 @@ bool UActionComponent::UpdatePawn(bool bForce /*= false*/)
 
 void UActionComponent::ExecuteAction(TSharedPtr<FAction> NewAction)
 {
-	if (!NewAction->IsValid())
+	if (!NewAction.IsValid())
 		return;
 
 	UpdatePawn();
@@ -248,14 +255,14 @@ void UActionComponent::ExecuteAction(TSharedPtr<FAction> NewAction)
 	}
 }
 
-void UActionComponent::StopAllAction()
+void UActionComponent::StopAllAction(const FString& Reason /*= EActionFinishReason::CustomStop*/)
 {
 	TArray<EActionType> KeyArray;
 	Actions.GetKeys(KeyArray);
 	for (auto Key : KeyArray)
 	{
 		EActionType IsType = Key;
-		FinishActionsByType(IsType, EActionResult::Abort);
+		FinishActionsByType(IsType, EActionResult::Abort, Reason);
 	}
 	Actions.Empty();
 }

@@ -1,6 +1,13 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #pragma once
+#include "UnrealString.h"
+
+namespace EActionFinishReason {
+	const static FString UnKnown(TEXT("UnKnown"));
+	const static FString UEInternalStop(TEXT("UEInternalStop"));
+	const static FString CustomStop(TEXT("CustomStop"));
+};
 
 UENUM(BlueprintType)
 enum class EActionResult : uint8
