@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{21406D22-4E00-F401-306E-62B7E116617A}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "NewProject",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
