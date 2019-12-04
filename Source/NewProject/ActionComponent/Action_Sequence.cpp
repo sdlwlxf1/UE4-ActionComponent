@@ -75,7 +75,7 @@ bool FAction_Sequence::FinishAction(EActionResult InResult, const FString& Reaso
 {
 	if (Sequence.Num() == 0 || !Sequence[0].IsValid())
 	{
-		return;
+		return true;
 	}
 	TSharedPtr<FAction> CurAction = Sequence[0];
 	Sequence[0].Reset();

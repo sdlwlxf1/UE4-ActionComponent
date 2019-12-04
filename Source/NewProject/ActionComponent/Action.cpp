@@ -37,11 +37,11 @@ void FAction::NotifyTypeChanged()
 
 bool FAction::DoFinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
-	if (FinishAction(InResult, EActionFinishReason::UnKnown, StopType))
+	if (FinishAction(InResult, Reason, StopType))
 	{
 		if (InResult != EActionResult::Clean)
 		{
-			PostFinish.ExecuteIfBound(this, InResult);
+			PostFinish.ExecuteIfBound(this, InResult, Reason);
 		}
 		return true;
 	}

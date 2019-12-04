@@ -10,6 +10,19 @@ namespace EActionFinishReason {
 };
 
 UENUM(BlueprintType)
+enum class EAction_AnimationPriority : uint8
+{
+	Chusheng		UMETA(DisplayName = "出场动作"),
+	Normal			UMETA(DisplayName = "技能动作 交互动作"),
+	Behit			UMETA(DisplayName = "受击动作"),
+	TurnBody		UMETA(DisplayName = "转身动作"),
+	IdleLeisure		UMETA(DisplayName = "休闲动作"),
+
+	Last			UMETA(Hidden)
+
+};
+
+UENUM(BlueprintType)
 enum class EActionResult : uint8
 {
 	Wait,

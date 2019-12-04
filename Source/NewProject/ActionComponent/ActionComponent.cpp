@@ -10,7 +10,7 @@
 
 DEFINE_LOG_CATEGORY(LogActionComponent)
 
-UActorComponent::UActorComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UActionComponent::UActionComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.TickGroup = TG_PrePhysics;

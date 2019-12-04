@@ -33,7 +33,18 @@ FName FAction_Parallel::GetName() const
 
 FString FAction_Parallel::GetDescription() const
 {
-
+	FAction *MajorPtr = Major.Get();
+	if (MajorPtr == nullptr)
+	{
+		MajorPtr = PendingMajor.Get();
+	}
+	FAction *MinorPtr = Minor.Get();
+	if (MinorPtr == nullptr)
+	{
+		MinorPtr = PendingMinor.Get();
+	}
+	FString ParallelString = TEXT("MajorPtr : [") + (MajorPtr ? MajorPtr->GetDescription() : FString()) + TEXT("], MinorPtr : [") + (MinorPtr ? MinorPtr->GetDescription() : FString()) + TEXT("]");
+	return FString::Printf(TEXT("%s (Parallel:{%s}"), *GetName().ToString(), *ParallelString);
 }
 
 EActionResult FAction_Parallel::ExecuteAction()
@@ -106,10 +117,68 @@ EActionResult FAction_Parallel::TickAction(float DeltaTime)
 
 void FAction_Parallel::UpdateType()
 {
-
+	Type = EActionType::Default;
+	if (Major.IsValid())
+	{
+		Type = Major->GetType();
+	}
+	if (Minor.IsValid() && Major.IsValid())
+	{
+		Type = Major->GetType() | Minor->GetType();
+	}
+	if (PendingMajor.IsValid())
+	{
+		Type = PendingMajor->GetType();
+	}
+	if (PendingMinor.IsValid() && PendingMajor.IsValid())
+	{
+		Type = PendingMajor->GetType() | PendingMinor->GetType();
+	}
 }
 
 bool FAction_Parallel::FinishChildAction(FAction* InAction, EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
-
+	if (InAction)
+	{
+		TSharedPtr<FAction> Action;
+		if (InAction == Major.Get())
+		{
+			Action = Major;
+			Major.Reset();
+			if (Action->DoFinishAction(InResult, Reason, StopType) == false)
+			{
+				Major = Action;
+				NotifyTypeChanged();
+				return false;
+			}
+			else
+			{
+				NotifyActionFinish(InResult, Reason);
+			}
+		}
+		else if (InAction == Minor.Get())
+		{
+			Action = Minor;
+			Minor.Reset();
+			if (Action->DoFinishAction(InResult, Reason, StopType))
+			{
+				if (bStopSeparateType || (InResult != EActionResult::Abort && InResult != EActionResult::Clean))
+				{
+					NotifyTypeChanged();
+				}
+				else
+				{
+					NotifyActionFinish(InResult, Reason);
+				}
+			}
+			else
+			{
+				Minor = Action;
+				NotifyTypeChanged();
+				return false;
+			}
+		}
+	}
+	return true;
 }
+
