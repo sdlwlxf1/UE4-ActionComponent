@@ -9,7 +9,7 @@
 class AActor;
 class UActionComponent;
 
-class FAction : public TSharedFromThis<FAction>
+class NEWPROJECT_API FAction : public TSharedFromThis<FAction>
 {
 	DECLARE_DELEGATE_RetVal_OneParam(bool, FPrerequisite, FAction*);
 	DECLARE_DELEGATE_OneParam(FPreExecute, FAction*);

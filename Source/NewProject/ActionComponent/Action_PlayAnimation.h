@@ -11,7 +11,7 @@ class UAnimMontage;
 
 NEWPROJECT_API DECLARE_LOG_CATEGORY_EXTERN(LogAction_PlayAnimation, Warning, All);
 
-class FAction_PlayAnimation : public FAction
+class NEWPROJECT_API FAction_PlayAnimation : public FAction
 {
 	DECLARE_DELEGATE_TwoParams(FOnBlendingInDelegate, FAction*, EActionResult);
 

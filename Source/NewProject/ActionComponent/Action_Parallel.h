@@ -4,7 +4,7 @@
 
 #include "Action.h"
 
-class FAction_Parallel : public FAction
+class NEWPROJECT_API FAction_Parallel : public FAction
 {
 public:
 	FAction_Parallel() { Type = EActionType::Default; }

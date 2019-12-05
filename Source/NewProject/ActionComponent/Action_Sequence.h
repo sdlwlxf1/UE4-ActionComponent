@@ -4,7 +4,7 @@
 
 #include "Action.h"
 
-class FAction_Sequence : public FAction
+class NEWPROJECT_API FAction_Sequence : public FAction
 {
 public:
 	static TSharedPtr<FAction_Sequence> CreateAction(const std::initializer_list<TSharedPtr<FAction>>& InActions);
