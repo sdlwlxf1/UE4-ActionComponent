@@ -3,6 +3,7 @@
 #include "Action_RootMotionRadial.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Curves/CurveFloat.h"
 
 DEFINE_LOG_CATEGORY(LogAction_RootMotionRadial)
 
@@ -24,8 +25,54 @@ void FRootMotionSource_NewRadialForce::PrepareRootMotion(float SimulationTime, f
 				const float DistanceFactor = StrengthDistanceFalloff->GetFloatValue(FMath::Clamp(Distance / Radius, 0.f, 1.f));
 				AdditiveStrengthFactor -= (1.f - DistanceFactor);
 			}
+
+			if (StrengthOverTime)
+			{
+				const float TimeValue = Duration > 0.f ? FMath::Clamp(GetTime() / Duration, 0.f, 1.f) : GetTime();
+				const float TimeFactor = StrengthOverTime->GetFloatValue(TimeValue);
+				AdditiveStrengthFactor -= (1.f - TimeFactor);
+			}
+
+			CurrentStrength = Strength * FMath::Clamp(AdditiveStrengthFactor, 0.f, 1.f);
+
+			if (Distance < Strength * MovementTickTime)
+			{
+				CurrentStrength = Distance;
+			}
+		}
+
+		if (bUseFixedWorldDirection)
+		{
+			Force = FixedWorldDirection.Vector() * CurrentStrength;
+		}
+		else
+		{
+			Force = (ForceLocation - CharacterLocation).GetSafeNormal() * CurrentStrength;
+
+			if (bIsPush)
+			{
+				Force *= -1.f;
+			}
 		}
 	}
+
+	if (bNoZForce)
+	{
+		Force.Z = 0.f;
+	}
+
+	FTransform NewTransform(Force);
+
+
+	if (SimulationTime != MovementTickTime && MovementTickTime > SMALL_NUMBER)
+	{
+		const float Multiplier = SimulationTime / MovementTickTime;
+		NewTransform.ScaleTranslation(Multiplier);
+	}
+
+	RootMotionParams.Set(NewTransform);
+
+	SetTime(GetTime() + SimulationTime);
 }
 
 TSharedPtr<FAction_RootMotionRadial> FAction_RootMotionRadial::CreateAction(FVector Location, AActor* LocationActor /*= nullptr*/, float Strength /*= 100.0f*/, float Duration /*= -1.0f*/, float Radius /*= 100.0f*/, bool bIsPush /*= true*/, bool bIsAdditive /*= true*/, bool bNoZForce /*= true*/, UCurveFloat* StrengthDistanceFalloff /*= nullptr*/, UCurveFloat* StrengthOverTime /*= nullptr*/, bool bUseFixedWorldDirection /*= false*/, FRotator FixedWorldDirection /*= FRotator(0.0f, 0.0f, 0.0f)*/, ERootMotionFinishVelocityMode VelocityOnFinishMode /*= ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity*/, FVector SetVelocityOnFinish /*= FVector::ZeroVector*/, float ClampVelocityOnFinish /*= 0.0f*/)
@@ -80,10 +127,34 @@ EActionResult FAction_RootMotionRadial::ExecuteAction()
 
 bool FAction_RootMotionRadial::FinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
 {
-
+	ACharacter *Character = Cast<ACharacter>(GetOwner());
+	UCharacterMovementComponent *MovementComponent = nullptr;
+	if (Character)
+	{
+		MovementComponent = Character->GetCharacterMovement();
+	}
+	if (MovementComponent)
+	{
+		MovementComponent->RemoveRootMotionSourceByID(RootMotionSourceID);
+	}
+	return true;
 }
 
 EActionResult FAction_RootMotionRadial::TickAction(float DeltaTime)
 {
+	if (GetOwner())
+	{
+		const bool bTimeOut = HasTimedOut();
+		const bool bIsInfiniteDuration = Duration < 0.f;
 
+		if (!bIsInfiniteDuration && bTimeOut)
+		{
+			return EActionResult::Success;
+		}
+	}
+	else
+	{
+		return EActionResult::Fail;
+	}
+	return EActionResult::Wait;
 }
