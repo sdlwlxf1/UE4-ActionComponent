@@ -13,7 +13,7 @@ class ACharacter;
 NEWPROJECT_API DECLARE_LOG_CATEGORY_EXTERN(LogAction_RootMotionRadial, Warning, All);
 
 USTRUCT()
-struct FRootMotionSource_NewRadialForce : public FRootMotionSource_RadialForce
+struct NEWPROJECT_API FRootMotionSource_NewRadialForce : public FRootMotionSource_RadialForce
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -25,7 +25,7 @@ struct FRootMotionSource_NewRadialForce : public FRootMotionSource_RadialForce
 };
 
 template<>
-struct TStructOpsTypeTraits<FRootMotionSource_NewRadialForce> : public TStructOpsTypeTraitsBase2<FRootMotionSource_NewRadialForce>
+struct NEWPROJECT_API TStructOpsTypeTraits<FRootMotionSource_NewRadialForce> : public TStructOpsTypeTraitsBase2<FRootMotionSource_NewRadialForce>
 {
 	enum
 	{
@@ -34,7 +34,7 @@ struct TStructOpsTypeTraits<FRootMotionSource_NewRadialForce> : public TStructOp
 	};
 };
 
-class FAction_RootMotionRadial : public FAction_RootMotionForce
+class NEWPROJECT_API FAction_RootMotionRadial : public FAction_RootMotionForce
 {
 public:
 	FAction_RootMotionRadial() { Type = EActionType::Move; }

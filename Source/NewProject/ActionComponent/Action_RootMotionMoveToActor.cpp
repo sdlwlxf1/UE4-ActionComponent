@@ -62,19 +62,9 @@ EActionResult FAction_RootMotionMoveToActor::TickAction(float DeltaTime)
 	if (AActor *MyActor = GetOwner())
 	{
 		const bool bTimedOut = HasTimedOut();
-		const float ReachedDestinationDistanceSqr = 50.f * 50.f;
-		const bool bReachedDestination = FVector::DistSquared(TargetActor, MyActor->GetActorActor()) < ReachedDestinationDistanceSqr;
 
 		if (bTimedOut)
 		{
-			if (bReachedDestination)
-			{
-
-			}
-			else
-			{
-
-			}
 			return EActionResult::Success;
 		}
 	}
