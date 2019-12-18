@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Action_RootMotionForce.h"
-#include "GameFramework/RootMotionSource.h"
+#include "Action_RootMotionRadial.generated.h"
 
 class UCharacterMovementComponent;
 class UAnimMontage;

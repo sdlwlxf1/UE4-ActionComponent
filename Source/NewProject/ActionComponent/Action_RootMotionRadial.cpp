@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Curves/CurveFloat.h"
+#include "Engine/World.h"
 
 DEFINE_LOG_CATEGORY(LogAction_RootMotionRadial)
 
@@ -122,7 +123,28 @@ EActionResult FAction_RootMotionRadial::ExecuteAction()
 		return EActionResult::Fail;
 	}
 	StartTime = GetOwner()->GetWorld()->GetTimeSeconds();
+	EndTime = StartTime + Duration;
 
+	FRootMotionSource_NewRadialForce* RadialForce = new FRootMotionSource_NewRadialForce();
+	RadialForce->InstanceName = FName("FAction_RootMotionRadial");
+	RadialForce->AccumulateMode = bIsAdditive ? ERootMotionAccumulateMode::Additive : ERootMotionAccumulateMode::Override;
+	RadialForce->Priority = 5;
+	RadialForce->Location = TargetLocation;
+	RadialForce->LocationActor = TargetLocationActor.Get();
+	RadialForce->Duration = Duration;
+	RadialForce->Radius = Radius;
+	RadialForce->Strength = Strength;
+	RadialForce->bIsPush = bIsPush;
+	RadialForce->bNoZForce = bNoZForce;
+	RadialForce->StrengthDistanceFalloff = StrengthDistanceFalloff.Get();
+	RadialForce->StrengthOverTime = StrengthOverTime.Get();
+	RadialForce->bUseFixedWorldDirection = bUseFixedWorldDirection;
+	RadialForce->FixedWorldDirection = FixedWorldDirection;
+	RadialForce->FinishVelocityParams.Mode = FinishVelocityMode;
+	RadialForce->FinishVelocityParams.SetVelocity = FinishSetVelocity;
+	RadialForce->FinishVelocityParams.ClampVelocity = FinishClampVelocity;
+	RootMotionSourceID = MovementComponent->ApplyRootMotionSource(RadialForce);
+	return EActionResult::Wait;
 }
 
 bool FAction_RootMotionRadial::FinishAction(EActionResult InResult, const FString& Reason /*= EActionFinishReason::UnKnown*/, EActionType StopType /*= EActionType::Default*/)
